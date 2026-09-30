@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Play, Sparkles, Download, Trash2, FilePlus,
-  FlaskConical, ChevronRight, ChevronLeft,
+  FlaskConical, ChevronRight, ChevronLeft, Upload,
   Info, BarChart3,
 } from 'lucide-react';
 
@@ -14,6 +14,7 @@ interface FloatingActionBarProps {
   onClean: () => void;
   onSample: () => void;
   onAddFile: () => void;
+  onImportFiles: () => void;
   onDownloadZip: () => void;
   onDeleteAll: () => void;
   onToggleReport: () => void;
@@ -29,6 +30,7 @@ const FloatingActionBar: React.FC<FloatingActionBarProps> = ({
   onClean,
   onSample,
   onAddFile,
+  onImportFiles,
   onDownloadZip,
   onDeleteAll,
   onToggleReport,
@@ -75,6 +77,16 @@ const FloatingActionBar: React.FC<FloatingActionBarProps> = ({
       disabled: false,
       gradient: 'from-blue-700 to-indigo-700',
       glow: 'shadow-blue-900/30',
+      primary: false,
+    },
+    {
+      id: 'import',
+      icon: <Upload className="w-4 h-4" />,
+      label: 'استيراد ملفات',
+      onClick: onImportFiles,
+      disabled: isProcessing,
+      gradient: 'from-sky-700 to-cyan-700',
+      glow: 'shadow-sky-900/30',
       primary: false,
     },
     {

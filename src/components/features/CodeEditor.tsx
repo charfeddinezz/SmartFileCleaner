@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Terminal, Trash2, FlaskConical, Plus, Play, Sparkles, Info, X } from 'lucide-react';
+import { Terminal, Trash2, FlaskConical, Plus, Play, Sparkles, Info, X, Upload } from 'lucide-react';
 import { AppSettings, CustomPattern } from '@/types';
 import SettingsBar from './SettingsBar';
 import DetectionModePicker from './DetectionModePicker';
@@ -15,6 +15,7 @@ interface CodeEditorProps {
   onClear: () => void;
   onSample: () => void;
   onAddFile: () => void;
+  onImportFiles: (files?: File[]) => void;
   isProcessing: boolean;
   hasFiles: boolean;
   // Custom pattern callbacks
@@ -35,6 +36,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   onClear,
   onSample,
   onAddFile,
+  onImportFiles,
   isProcessing,
   hasFiles,
   onAddPattern,
@@ -65,7 +67,14 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   const isCustomMode = settings.detectionMode === 'custom';
 
   return (
-    <div className="flex flex-col h-full">
+    <div
+      className="flex flex-col h-full"
+      onDragOver={e => e.preventDefault()}
+      onDrop={e => {
+        e.preventDefault();
+        if (e.dataTransfer.files.length > 0) onImportFiles(Array.from(e.dataTransfer.files));
+      }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -218,6 +227,15 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
         >
           <Plus className="w-4 h-4" />
           إضافة ملف
+        </button>
+
+        <button
+          onClick={onImportFiles}
+          disabled={isProcessing}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl bg-sky-700/40 hover:bg-sky-600/50 text-sky-300 font-semibold text-sm transition-all border border-sky-700/40 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <Upload className="w-4 h-4" />
+          استيراد ملفات
         </button>
 
         <button

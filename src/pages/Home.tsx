@@ -8,6 +8,7 @@ import FilePreviewModal from '@/components/features/FilePreviewModal';
 import FileEditModal from '@/components/features/FileEditModal';
 import CleaningReport from '@/components/features/CleaningReport';
 import FloatingActionBar from '@/components/features/FloatingActionBar';
+import AIWorkspace from '@/components/features/AIWorkspace';
 import { useFileManager } from '@/hooks/useFileManager';
 import { useZipDownload } from '@/hooks/useZipDownload';
 import { FileEntry } from '@/types';
@@ -26,6 +27,7 @@ const Home: React.FC = () => {
     isProcessing,
     parseAndClean,
     addFile,
+    addFiles,
     updateFile,
     deleteFile,
     deleteAll,
@@ -43,6 +45,7 @@ const Home: React.FC = () => {
   const [editFile, setEditFile] = useState<FileEntry | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [showReport, setShowReport] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleParse = useCallback(() => {
     const result = parseAndClean();
@@ -85,6 +88,24 @@ const Home: React.FC = () => {
     setEditFile(null);
     setIsEditOpen(true);
   }, []);
+
+  const handleImportFiles = useCallback(async (source?: React.ChangeEvent<HTMLInputElement> | File[]) => {
+    if (!source) {
+      fileInputRef.current?.click();
+      return;
+    }
+
+    const selectedFiles = Array.isArray(source) ? source : Array.from(source.target.files ?? []);
+    if (!Array.isArray(source)) source.target.value = '';
+    if (selectedFiles.length === 0) return;
+
+    const importedFiles = await Promise.all(selectedFiles.map(async file => ({
+      path: file.webkitRelativePath || file.name,
+      content: await file.text(),
+    })));
+    addFiles(importedFiles);
+    toast.success(`تم استيراد وتنظيف ${importedFiles.length} ملف`);
+  }, [addFiles]);
 
   const handleEditFile = useCallback((file: FileEntry) => {
     setEditFile(file);
@@ -158,6 +179,7 @@ const Home: React.FC = () => {
         onClean={handleClean}
         onSample={handleSample}
         onAddFile={handleAddFile}
+        onImportFiles={() => handleImportFiles()}
         onDownloadZip={handleDownloadZip}
         onDeleteAll={handleDeleteAll}
         onToggleReport={() => setShowReport(v => !v)}
@@ -171,6 +193,7 @@ const Home: React.FC = () => {
       {/* Content */}
       <div className="relative z-10 container mx-auto max-w-[1440px] px-4 py-6">
         <Header />
+        <AIWorkspace editorText={editorText} onEditorTextChange={setEditorText} />
 
         {/* Main Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -187,6 +210,7 @@ const Home: React.FC = () => {
                 onClear={handleClear}
                 onSample={handleSample}
                 onAddFile={handleAddFile}
+                onImportFiles={() => handleImportFiles()}
                 isProcessing={isProcessing}
                 hasFiles={files.length > 0}
                 onAddPattern={addCustomPattern}
@@ -229,6 +253,15 @@ const Home: React.FC = () => {
 
       {/* Modals */}
       <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept=".html,.htm,.css,.js,.jsx,.ts,.tsx,.json,.md,.txt,.xml,.svg,.vue,.svelte"
+        className="hidden"
+        onChange={handleImportFiles}
+        aria-label="استيراد ملفات"
+      />
       <FileEditModal
         file={editFile}
         isOpen={isEditOpen}

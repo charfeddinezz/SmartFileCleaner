@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { CheckCircle2, Sparkles, X, ChevronDown, ChevronUp, BarChart3, FileWarning } from 'lucide-react';
+import { CheckCircle2, Sparkles, X, ChevronDown, ChevronUp, BarChart3, FileWarning, ShieldAlert, Lightbulb } from 'lucide-react';
 import { FileEntry } from '@/types';
 import { formatBytes } from '@/lib/fileUtils';
+import { analyzeFilesQuality } from '@/lib/qualityAnalyzer';
 
 interface CleaningReportProps {
   files: FileEntry[];
@@ -12,6 +13,8 @@ const CleaningReport: React.FC<CleaningReportProps> = ({ files, onClose }) => {
   const [expanded, setExpanded] = useState(false);
   const cleanedFiles = files.filter(f => f.wasCleaned);
   const cleanFiles = files.filter(f => !f.wasCleaned);
+  const qualityResults = analyzeFilesQuality(files);
+  const qualityFindings = qualityResults.reduce((total, result) => total + result.findings.length, 0);
 
   if (files.length === 0) return null;
 
@@ -84,6 +87,31 @@ const CleaningReport: React.FC<CleaningReportProps> = ({ files, onClose }) => {
           </span>
         </div>
       </div>
+
+      {qualityResults.length > 0 && (
+        <div className="px-4 py-3 border-b border-amber-900/20 bg-amber-950/10">
+          <div className="flex items-center gap-2 mb-2">
+            <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-xs font-semibold text-amber-300">مراجعة ذكية</span>
+            <span className="text-[10px] text-slate-500">{qualityFindings} ملاحظة في {qualityResults.length} ملف</span>
+          </div>
+          <div className="grid gap-1.5">
+            {qualityResults.slice(0, expanded ? qualityResults.length : 3).map(result => (
+              <div key={result.path} className="flex items-start gap-2 text-[11px]">
+                <FileWarning className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-400" />
+                <span className="font-mono text-slate-400 truncate max-w-[42%]" title={result.path}>{result.path}</span>
+                <span className="text-slate-500">{result.findings.map(finding => finding.message).join('، ')}</span>
+              </div>
+            ))}
+          </div>
+          {!expanded && qualityResults.length > 3 && (
+            <div className="flex items-center gap-1 mt-2 text-[10px] text-slate-500">
+              <Lightbulb className="w-3 h-3 text-cyan-400" />
+              وسّع التقرير لرؤية بقية الملاحظات
+            </div>
+          )}
+        </div>
+      )}
 
       {/* File List */}
       <div className={`transition-all duration-300 overflow-hidden ${expanded ? 'max-h-64' : 'max-h-20'} overflow-y-auto`}>

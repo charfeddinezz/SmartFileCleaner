@@ -133,6 +133,28 @@ export function useFileManager() {
     });
   }, []);
 
+  const addFiles = useCallback((incomingFiles: Array<{ path: string; content: string }>) => {
+    const cleanedFiles = incomingFiles.map(file => {
+      const { cleaned, wasCleaned } = cleanFileContent(file.content, file.path, settings.cleanMode);
+      return {
+        path: file.path,
+        content: cleaned,
+        originalContent: file.content,
+        wasCleaned,
+      };
+    });
+
+    setFiles(prev => {
+      const merged = [...prev];
+      for (const file of cleanedFiles) {
+        const existingIndex = merged.findIndex(existing => existing.path === file.path);
+        if (existingIndex === -1) merged.push(file);
+        else merged[existingIndex] = file;
+      }
+      return merged;
+    });
+  }, [settings.cleanMode]);
+
   const updateFile = useCallback((oldPath: string, newPath: string, newContent: string) => {
     setFiles(prev => prev.map(f => f.path === oldPath ? { ...f, path: newPath, content: newContent } : f));
   }, []);
@@ -214,6 +236,7 @@ export function useFileManager() {
     isProcessing,
     parseAndClean,
     addFile,
+    addFiles,
     updateFile,
     deleteFile,
     deleteAll,

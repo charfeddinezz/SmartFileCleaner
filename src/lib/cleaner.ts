@@ -923,7 +923,7 @@ const LANG_TO_EXT: Record<string, string> = {
   java: 'java', rust: 'rs', ruby: 'rb', kotlin: 'kt', swift: 'swift',
   c: 'c', cpp: 'cpp', cs: 'cs', vue: 'vue', svelte: 'svelte',
   astro: 'astro', graphql: 'graphql', dart: 'dart', lua: 'lua',
-  scala: 'scala', groovy: 'groovy', r: 'r', perl: 'pl', lua: 'lua',
+  scala: 'scala', groovy: 'groovy', r: 'r', perl: 'pl',
 };
 
 // ─── Helper: collect content from inside a fence block ────
